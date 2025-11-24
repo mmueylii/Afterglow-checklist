@@ -1,205 +1,3 @@
-<!-- <!DOCTYPE html>
-<html lang="th">
-<head>
-<meta charset="UTF-8">
-<title>Concert Checklist</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Kanit:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Poppins','Kanit',sans-serif;background:#f0f4f8;padding:80px 20px 20px 20px;max-width:650px;margin:auto;}
-#topBar{position:fixed;top:0;left:0;right:0;background:#ffffffee;padding:10px 20px;border-bottom:1px solid #dcdde1;display:flex;justify-content:flex-end;gap:10px;z-index:999;}
-#welcome{margin-right:auto;font-weight:500;color:#4b6584;}
-h1{color:#ff6fcf;text-align:center;margin-bottom:20px;font-size:1.6rem;font-weight:600;}
-h2{margin-top:25px;color:#4b6584;font-size:1.2rem;font-weight:500;cursor:pointer;user-select:none;position:relative;padding-right:25px;}
-h2::after{content:"▼";position:absolute;right:0;font-size:0.9rem;transition:transform 0.3s;}
-h2.collapsed::after{transform:rotate(-90deg);}
-.section-items{overflow:hidden;transition:max-height 0.4s ease;}
-.item{background:#ffffff;padding:12px 15px;border-radius:12px;margin:8px 0;display:flex;justify-content:space-between;align-items:center;border:1px solid #dcdde1;transition:all 0.3s ease;}
-.item:hover{background:#ffe6f0;}
-.item label{display:flex;align-items:center;flex:1;gap:10px;}
-.item input[type=checkbox]{width:18px;height:18px;accent-color:#ff6fcf;}
-.delete-btn.default{display:none;}
-.delete-btn.user{display:inline-block;padding:6px 12px;border-radius:6px;background:#ff6b6b;color:white;border:none;cursor:pointer;font-size:13px;transition:background 0.3s;}
-.delete-btn.user:hover{background:#ff4b4b;}
-#addSection{margin-top:25px;display:flex;gap:8px;flex-wrap:wrap;}
-#newItem{flex:1;padding:10px;border-radius:8px;border:1px solid #aaa;}
-#addBtn,#saveBtn,#langBtn{padding:10px 15px;border:none;border-radius:8px;cursor:pointer;color:white;flex-shrink:0;}
-#addBtn{background:#ff6fcf;}#saveBtn{background:#4b7bec;}#langBtn{background:#ff9f43;}
-@media(max-width:480px){#addSection{flex-direction:column;}#addSection button{width:100%;}}
-#footer{
-  text-align:center;
-  padding:12px 0;
-  margin-top:30px;
-  font-size:0.9rem;
-  color:#888;
-  border-top:1px solid #dcdde1;
-}
-.image-container {
-    width: 100%; /* Container takes full width */
-    height: auto; /* Set a specific height for the container, adjust as needed */
-    overflow: hidden; /* Hides overflowing parts of the image */
-    
-}
-
-.cover-image {
-  width: 100%;
-  height: auto;
-  background-repeat: no-repeat;
-  background-size: contain;
-  border-radius: 12px ;
-}
-</style>
-</head>
-<body>
-<div id="topBar">
-  <span id="welcome"></span>
-  <button id="langBtn" onclick="toggleLang()">EN/TH</button>
-  <button id="saveBtn" onclick="downloadList()">Save / บันทึก</button>
-</div>
-<h1 id="title"></h1>
-<div class="image-container">
-    <img src="img\S__24313861.jpg" alt="Description of image" class="cover-image">
-</div>
-<div id="listContainer"></div>
-<h2 id="addTitle"></h2>
-<div id="addSection">
-  <input id="newItem" type="text" placeholder="">
-  <button id="addBtn" onclick="addItem()">เพิ่ม / Add</button>
-</div>
-<footer id="footer">
-  By @forsupportPP 💖
-</footer>
-<script>
-// ======= Username =======
-const username = localStorage.getItem("username") || "ผู้ใช้";
-document.getElementById('welcome').innerHTML = `🩷 <a href="login.html" style="text-decoration:none;color:#4b6584;">สวัสดี, ${username}!</a>`;
-
-// ======= Data =======
-const defaultListTH=[
-  {category:"เดินทาง ✈️",items:["พาสปอร์ต","ตั๋วเครื่องบิน / Boarding Pass","บัตรประชาชน","ที่พักและแผนที่","ประกันเดินทาง","สำเนาพาสปอร์ต / ไฟล์ PDF"]},
-  {category:"การเงิน 💳",items:["บัตรเครดิต/เดบิต","เงินสด(MOP)"]},
-  {category:"มือถือ & อุปกรณ์ 📱",items:["ซิม/ESIM อินเทอร์เน็ต","Powerbank","สายชาร์จ","ปลั๊ก Universal Adapter"]},
-  {category:"คอนเสิร์ต 🎫",items:["บัตรคอน","มาดามบง"]},
-  {category:"ของใช้ส่วนตัว 👜",items:["ยาประจำตัว","ทิชชู่เปียก","เครื่องแต่งหน้า","ของใช้ในห้องน้ำ(เช่น เจลอาบน้ำ, แชมพู, ยาสีฟัน, ครีมกันแดด)"]},
-  {category:"เสื้อผ้า 👗",items:["เสื้อผ้า","เสื้อกันหนาว","รองเท้า"]}
-];
-const defaultListEN=[
-  {category:"Travel ✈️",items:["Passport","Flight ticket / Boarding Pass","ID card","Accommodation & Map","Travel Insurance","Passport copy / PDF"]},
-  {category:"Finance 💳",items:["Credit/Debit Card","Local Currency Cash(MOP)"]},
-  {category:"Mobile & Devices 📱",items:["SIM/ESIM Internet","Powerbank","Charger","Universal Plug Adapter"]},
-  {category:"Concert 🎫",items:["Concert Ticket","Lightstick"]},
-  {category:"Personal Items 👜",items:["Medication","Wet Tissue","Cosmetic","Bathroom amenities (e.g. shower gel, shampoo, toothpaste, sunscreen)"]},
-  {category:"Clothes 👗",items:["Clothes","overcoat","Comfortable Shoes"]}
-];
-
-let userItems=JSON.parse(localStorage.getItem("userItems")||"[]");
-let checked=JSON.parse(localStorage.getItem("checked")||"{}");
-let lang='TH';
-
-// ======= Save =======
-function saveChecked(){ localStorage.setItem("checked",JSON.stringify(checked)); }
-function saveUserItems(){ localStorage.setItem("userItems",JSON.stringify(userItems)); }
-
-// ======= Render =======
-function renderList(){
-  const container=document.getElementById("listContainer");
-  container.innerHTML="";
-  const list=(lang==='TH')?defaultListTH:defaultListEN;
-    document.getElementById("title").textContent=(lang==='TH')?"PPKrit My Pleasure Concert Afterglow Checklist ✈️🎤":"PPKrit My Pleasure Concert Afterglow Checklist ✈️🎤";
-
-  document.getElementById("addTitle").textContent=(lang==='TH')?"➕ เพิ่มรายการเอง":"➕ Add your own items";
-  document.getElementById("newItem").placeholder=(lang==='TH')?"เพิ่มรายการใหม่...":"Add new item...";
-
-  list.forEach((group,catIndex)=>{
-    let section=document.createElement("div");
-    let itemsDiv=document.createElement("div"); itemsDiv.className="section-items";
-
-    group.items.forEach((text,itemIndex)=>{
-      const id=`default_${catIndex}_${itemIndex}`;
-      const itemDiv=document.createElement("div"); itemDiv.className="item";
-      itemDiv.innerHTML=`<label><input type="checkbox" ${checked[id]?"checked":""} onchange="checked['${id}']=this.checked; saveChecked();">${text}</label><button class="delete-btn default">ลบ</button>`;
-      itemsDiv.appendChild(itemDiv);
-    });
-
-    const h2=document.createElement("h2"); h2.textContent=group.category;
-    section.appendChild(h2); section.appendChild(itemsDiv); container.appendChild(section);
-
-    // Section collapse
-    if(catIndex===0){ itemsDiv.style.maxHeight=itemsDiv.scrollHeight+"px"; }
-    else{ itemsDiv.style.maxHeight="0px"; h2.classList.add("collapsed"); }
-    h2.addEventListener("click",()=>{
-      if(itemsDiv.style.maxHeight && itemsDiv.style.maxHeight!="0px"){ itemsDiv.style.maxHeight="0px"; h2.classList.add("collapsed"); }
-      else{ itemsDiv.style.maxHeight=itemsDiv.scrollHeight+"px"; h2.classList.remove("collapsed"); }
-    });
-  });
-
-  // User-added items
-  if(userItems.length>0){
-    let section=document.createElement("div");
-    let h2=document.createElement("h2"); h2.textContent=(lang==='TH')?"รายการที่เพิ่มเอง ✍🏻":"User-added Items ✍🏻";
-    section.appendChild(h2);
-    let itemsDiv=document.createElement("div"); itemsDiv.className="section-items";
-    userItems.forEach((text,index)=>{
-      const id=`user_${index}`;
-      const itemDiv=document.createElement("div"); itemDiv.className="item";
-      itemDiv.innerHTML=`<label><input type="checkbox" ${checked[id]?"checked":""} onchange="checked['${id}']=this.checked; saveChecked();">${text}</label><button class="delete-btn user" onclick="deleteItem(${index})">${(lang==='TH')?"ลบ":"Delete"}</button>`;
-      itemsDiv.appendChild(itemDiv);
-    });
-    section.appendChild(itemsDiv);
-    container.appendChild(section);
-  }
-}
-
-// ======= Add/Delete =======
-function addItem(){
-  const val=document.getElementById("newItem").value.trim(); if(!val) return;
-  userItems.push(val); saveUserItems(); document.getElementById("newItem").value=""; renderList();
-}
-function deleteItem(index){
-  const id=`user_${index}`; delete checked[id];
-  userItems.splice(index,1); saveUserItems(); saveChecked(); renderList();
-}
-
-// ======= Toggle language =======
-function toggleLang(){ lang=(lang==='TH')?'EN':'TH'; renderList(); }
-
-// ======= Save HTML =======
-function downloadList(){
-  const container=document.getElementById("listContainer");
-  const clone=container.cloneNode(true);
-  clone.querySelectorAll(".delete-btn").forEach(btn=>btn.remove());
-  clone.querySelectorAll("input[type=checkbox]").forEach(input=>{
-    if(input.checked) input.setAttribute("checked","checked"); else input.removeAttribute("checked");
-  });
-  clone.querySelectorAll(".section-items").forEach(div=>{ div.style.maxHeight="none"; });
-  const htmlContent=`<!DOCTYPE html>
-<html lang="th">
-<head>
-<meta charset="UTF-8">
-<title>${document.getElementById("title").textContent}</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Kanit:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-body{font-family:'Poppins','Kanit',sans-serif;padding:20px;background:#f0f4f8;max-width:650px;margin:auto;}
-h1{color:#ff6fcf;text-align:center;}
-h2{color:#4b6584;margin-top:25px;}
-.item{background:#fff;padding:12px 15px;border-radius:12px;margin:8px 0;display:flex;align-items:center;border:1px solid #dcdde1;}
-.item input{margin-right:12px;width:18px;height:18px;accent-color:#ff6fcf;}
-</style>
-</head>
-<body>
-${clone.innerHTML}
-</body>
-</html>`;
-  const blob=new Blob([htmlContent],{type:"text/html;charset=utf-8"});
-  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="concert_checklist.html"; a.click();
-}
-
-// ======= Init =======
-renderList();
-</script>
-</body>
-</html> -->
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -228,7 +26,7 @@ h2.collapsed::after{transform:rotate(-90deg);}
 #addSection{margin-top:25px;display:flex;gap:8px;flex-wrap:wrap;}
 #newItem{flex:1;padding:10px;border-radius:8px;border:1px solid #aaa;}
 #addBtn,#saveBtn,#langBtn{padding:10px 15px;border:none;border-radius:8px;cursor:pointer;color:white;flex-shrink:0;}
-#addBtn{background:#ff6fcf;}#saveBtn{background:#4b7bec;}#langBtn{background:#ff9f43;}
+#addBtn{background:#ff6fcf;}#saveBtn{background:#4b7bec;}#langBtn{background:#ff6fcf;}
 @media(max-width:480px){#addSection{flex-direction:column;}#addSection button{width:100%;}}
 #footer{
   text-align:center;
@@ -279,21 +77,21 @@ document.getElementById('welcome').innerHTML =
 
 // ---------------- Default lists ----------------
 const defaultListTH = [
-  {category:"เดินทาง ✈️",items:["พาสปอร์ต","ตั๋วเครื่องบิน / Boarding Pass","บัตรประชาชน","ที่พักและแผนที่","ประกันเดินทาง","สำเนาพาสปอร์ต / ไฟล์ PDF"]},
-  {category:"การเงิน 💳",items:["บัตรเครดิต/เดบิต","เงินสด(MOP)"]},
+  {category:"เดินทาง ✈️",items:["พาสปอร์ต","ตั๋วเครื่องบิน / Boarding Pass","บัตรประชาชน","ที่พักและแผนที่","ประกันเดินทาง","สำเนาพาสปอร์ต / ไฟล์ PDF","กุญแจบ้าน"]},
+  {category:"การเงิน 💳",items:["บัตรเครดิต/เดบิต/Travel card","เงินสด(MOP)",]},
   {category:"มือถือ & อุปกรณ์ 📱",items:["ซิม/ESIM อินเทอร์เน็ต","Powerbank","สายชาร์จ","ปลั๊ก Universal Adapter"]},
-  {category:"คอนเสิร์ต 🎫",items:["บัตรคอน","มาดามบง"]},
-  {category:"ของใช้ส่วนตัว 👜",items:["ยาประจำตัว","ทิชชู่เปียก","เครื่องแต่งหน้า","ของใช้ในห้องน้ำ"]},
+  {category:"คอนเสิร์ต 🎫",items:["บัตรคอน","มาดามบง","กำลังใจให้น้องพีพี✊🏻📦🩷"]},
+  {category:"ของใช้ส่วนตัว 👜",items:["ยาประจำตัว","ทิชชู่เปียก","เครื่องแต่งหน้า","ของใช้ในห้องน้ำ(แปรงสีฟัน + ยาสีฟัน / สบู่ / แชมพู)","หวี / ยางรัดผม"]},
   {category:"เสื้อผ้า 👗",items:["เสื้อผ้า","เสื้อกันหนาว","รองเท้า"]}
 ];
 
 const defaultListEN = [
-  {category:"Travel ✈️",items:["Passport","Boarding Pass","ID card","Accommodation & Map","Travel Insurance","Passport copy / PDF"]},
-  {category:"Finance 💳",items:["Credit/Debit Card","Cash (MOP)"]},
+  {category:"Travel ✈️",items:["Passport","Boarding Pass","ID card","Accommodation & Map","Travel Insurance","Passport copy / PDF","House Key"]},
+  {category:"Finance 💳",items:["Credit/Debit Card/Travel card","Cash (MOP)"]},
   {category:"Mobile & Devices 📱",items:["SIM/ESIM","Powerbank","Charger","Universal Adapter"]},
-  {category:"Concert 🎫",items:["Concert Ticket","Lightstick"]},
-  {category:"Personal Items 👜",items:["Medication","Wet Tissues","Cosmetic","Bathroom items"]},
-  {category:"Clothes 👗",items:["Clothes","Jacket","Shoes"]}
+  {category:"Concert 🎫",items:["Concert Ticket","Lightstick","Cheering to PPKrit✊🏻📦🩷"]},
+  {category:"Personal Items 👜",items:["Medication","Wet Tissues","Cosmetic","Bathroom items(Toothbrush + toothpaste/soap/shampoo)","Comb / Hair tie"]},
+  {category:"Clothes 👗",items:["Clothes","ฯvercoat","Shoes"]}
 ];
 
 // ---------------- User + Check Save ----------------
